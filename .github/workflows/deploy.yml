@@ -27,4 +27,4 @@ jobs:
         run: sam build
 
       - name: Deploy SAM app
-        run: sam deploy --no-confirm-changeset --stack-name aws-iot-sam-stack --capabilities CAPABILITY_IAM
+        run: sam deploy --guided --stack-name aws-iot-sam-stack --capabilities CAPABILITY_IAM
