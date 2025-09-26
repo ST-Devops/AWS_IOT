@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS IoT + Lambda + API Gateway + CloudWatch Application
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 10
+    MemorySize: 128
+
+Resources:
+
+  IoTLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "IoTLambdaFunction"
+      Handler: app.handler
+      CodeUri: hello-world/
+      Policies:
+        - CloudWatchLogsFullAccess
+      Environment:
+        Variables:
+          LOG_LEVEL: INFO
+
+  MyIoTTopicRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: "MyIoTRule"
+      TopicRulePayload:
+        Sql: "SELECT * FROM 'my/iot/topic'"
+        Actions:
+          - Lambda:
+              FunctionArn: !GetAtt IoTLambdaFunction.Arn
+        RuleDisabled: false
+
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: "MyIoTApi"
+      StageName: "dev"
+      EndpointConfiguration: REGIONAL
+
+  ApiLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      Runtime: nodejs18.x
+      CodeUri: hello-world/
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /iot
+            Method: post
+            RestApiId: !Ref MyApi
+
+Outputs:
+  LambdaFunctionName:
+    Description: "Lambda function name"
+    Value: !Ref IoTLambdaFunction
+
+  ApiEndpoint:
+    Description: "API Gateway endpoint"
+    Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/dev/iot"

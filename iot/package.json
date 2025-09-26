@@ -1,0 +1,11 @@
+{
+    "name": "hello-world",
+    "version": "1.0.0",
+    "description": "Lambda function for AWS IoT",
+    "main": "app.js",
+    "scripts": {
+      "test": "echo \"No tests yet\""
+    },
+    "dependencies": {}
+  }
+  
